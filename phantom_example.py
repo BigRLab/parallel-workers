@@ -27,6 +27,7 @@ class PhantomJSProcessor(Processor):
         """
         Processor.__init__(self)
         self.driver = webdriver.PhantomJS("phantomjs/phantomjs")  # the normal SE phantomjs binding
+        self.driver.set_window_size(1024, 768)
 
     def process(self, url):
         """
