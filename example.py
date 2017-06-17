@@ -30,7 +30,7 @@ class ExampleProcessor(Processor):
 processor_service = ProcessorService(ExampleProcessor, parallel_workers=2)
 processor_service.start()
 
-# 2. Encolamos 3  elementos
+# 2. Encolamos 4 elementos
 print("Queued hola, hola2, hola3 y hola4")
 promise = processor_service.queue_request("hola")
 promise2 = processor_service.queue_request("hola2")
