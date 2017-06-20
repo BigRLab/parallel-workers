@@ -13,7 +13,7 @@ Given a pool of N processes and a queue, the processes will compete each other f
 
 Given a `ExampleProcessor` class defined as:
 
-```python3
+```python
 class ExampleProcessor(Processor):
     """
     Processor class for a simple string request.
@@ -33,7 +33,7 @@ class ExampleProcessor(Processor):
 
 The following example corresponds to the `example.py`, with a pool of 2 workers as a service:
 
-```python3
+```python
 # 1. Start the service with 2 processors.
 processor_service = ProcessorService(ExampleProcessor, parallel_workers=2)
 processor_service.start()
