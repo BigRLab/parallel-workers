@@ -13,7 +13,7 @@ The example shows the proof-of-concept simulating a process of a simple String w
 In total, 4 different strings are provided to the pool, showing how they are processed two by two because the pool is composed by two processes. 
 
 # Characteristics:
- * The results are retrieved by using the (promise pattern)[https://en.wikipedia.org/wiki/Futures_and_promises]. 
+ * The results are retrieved by using the [promise pattern](https://en.wikipedia.org/wiki/Futures_and_promises).
  * All the queued elements that share the same python `__hash__()` will return the same promise, thus, getting processed only once regardless the number of elements with same hash queued.
 
 # Drawbacks:
