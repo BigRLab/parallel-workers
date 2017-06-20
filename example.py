@@ -26,11 +26,11 @@ class ExampleProcessor(Processor):
         return "{} processed.".format(request)
 
 
-# 1. Arrancamos el servicio con 2 procesos
+# 1. Start the service with 2 processors.
 processor_service = ProcessorService(ExampleProcessor, parallel_workers=2)
 processor_service.start()
 
-# 2. Encolamos 4 elementos
+# 2. Queue 4 elements
 print("Queued hola, hola2, hola3 y hola4")
 promise = processor_service.queue_request("hola")
 promise2 = processor_service.queue_request("hola2")
