@@ -21,9 +21,10 @@ class ProcessorService(ServiceInterface, PoolInterface):
         with self.lock:
             if request in self.promises:
                 promise = self.promises[request]
+                promise.discard_one_abort()
 
             else:
-                promise = ResultPromise(self.manager)
+                promise = ResultPromise(self.manager, request, self)
                 self.promises[request] = promise
                 PoolInterface.queue_request(self, request)
 

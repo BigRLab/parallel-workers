@@ -19,10 +19,10 @@ class ExampleProcessor(Processor):
         :param request:
         :return:
         """
-        # Simulamos tiempo de procesamiento
+        # We simulate processing time
         sleep(5)
 
-        # Retornamos resultado
+        # Return result
         return "{} processed.".format(request)
 
 
@@ -36,6 +36,9 @@ promise = processor_service.queue_request("hola")
 promise2 = processor_service.queue_request("hola2")
 promise3 = processor_service.queue_request("hola3")
 promise4 = processor_service.queue_request("hola4")
+
+promise3.abort()
+print("Aborted promise3")
 
 print(promise.get_result())
 print(promise2.get_result())
