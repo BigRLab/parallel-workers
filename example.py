@@ -13,6 +13,11 @@ class ExampleProcessor(Processor):
     """
     Processor class for a simple string request.
     """
+
+    def __init__(self, arg_name):
+        super().__init__()
+        self.arg_name = arg_name
+
     def process(self, request):
         """
         Retrieves a request (any kind of object) and returns a result
@@ -23,11 +28,11 @@ class ExampleProcessor(Processor):
         sleep(5)
 
         # Return result
-        return "{} processed.".format(request)
+        return "({}) {} processed.".format(self.arg_name, request)
 
 
 # 1. Start the service with 2 processors.
-processor_service = ProcessorService(ExampleProcessor, parallel_workers=2)
+processor_service = ProcessorService(ExampleProcessor, parallel_workers=2, processor_class_init_args=["IVAN"])
 processor_service.start()
 
 # 2. Queue 4 elements

@@ -11,9 +11,10 @@ __author__ = 'Iván de Paz Centeno'
 
 class ProcessorService(ServiceInterface, PoolInterface):
 
-    def __init__(self, processor_class, parallel_workers=10):
+    def __init__(self, processor_class, parallel_workers=10, processor_class_init_args=None):
         ServiceInterface.__init__(self)
-        PoolInterface.__init__(self, processor_class=processor_class, pool_limit=parallel_workers)
+        PoolInterface.__init__(self, processor_class=processor_class, pool_limit=parallel_workers,
+                               processor_class_init_args=processor_class_init_args)
         self.total_workers = parallel_workers
         self.promises = {}
 

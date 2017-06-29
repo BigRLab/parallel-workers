@@ -43,7 +43,7 @@ class PoolInterface(object):
     Allows to process something in parallel.
     """
 
-    def __init__(self, processor_class, pool_limit=1):
+    def __init__(self, processor_class, pool_limit=1, processor_class_init_args=None):
 
         self.manager = Manager()
 
@@ -51,7 +51,7 @@ class PoolInterface(object):
         self.abort_dict = self.manager.dict()
 
         self.pool = Pool(processes=pool_limit, initializer=self._init_pool_worker,
-                         initargs=[processor_class, self.abort_dict])
+                         initargs=[processor_class, self.abort_dict, processor_class_init_args])
 
         self.pool_limit = pool_limit
         self.processes_free = pool_limit
@@ -59,14 +59,17 @@ class PoolInterface(object):
         self.lock_process_variable = Lock()
 
     @staticmethod
-    def _init_pool_worker(processor_class, _abort_dict):
+    def _init_pool_worker(processor_class, _abort_dict, processor_class_init_args=None):
         """
         Initializes the worker thread. Each worker of the pool has its own firefox and display instance.
         :return:
         """
         global processor, abort_dict
 
-        processor = processor_class()
+        if processor_class_init_args is None:
+            processor_class_init_args = [""]
+
+        processor = processor_class(*processor_class_init_args)
         abort_dict = _abort_dict
 
     def do_stop(self):
