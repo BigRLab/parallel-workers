@@ -67,9 +67,13 @@ class PoolInterface(object):
         global processor, abort_dict
 
         if processor_class_init_args is None:
-            processor_class_init_args = [""]
+            processor_class_init_args = []
 
-        processor = processor_class(*processor_class_init_args)
+        if len(processor_class_init_args) > 0:
+            processor = processor_class(*processor_class_init_args)
+        else:
+            processor = processor_class()
+
         abort_dict = _abort_dict
 
     def do_stop(self):

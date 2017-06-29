@@ -14,9 +14,9 @@ class ExampleProcessor(Processor):
     Processor class for a simple string request.
     """
 
-    def __init__(self, arg_name):
+    def __init__(self, arg_example=None):
         super().__init__()
-        self.arg_name = arg_name
+        self.arg_name = arg_example
 
     def process(self, request):
         """
@@ -32,7 +32,7 @@ class ExampleProcessor(Processor):
 
 
 # 1. Start the service with 2 processors.
-processor_service = ProcessorService(ExampleProcessor, parallel_workers=2, processor_class_init_args=["IVAN"])
+processor_service = ProcessorService(ExampleProcessor, parallel_workers=2, processor_class_init_args=["Ivan"])
 processor_service.start()
 
 # 2. Queue 4 elements
