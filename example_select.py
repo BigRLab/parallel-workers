@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+import random
 from time import sleep
+
+from parallelization.promise_set import PromiseSet
 from processors.processor_interface import Processor
 from services.processor_service import ProcessorService
 
@@ -21,10 +23,13 @@ class ExampleProcessor(Processor):
         :return:
         """
         # We simulate processing time
-        sleep(5)
+        time_to_sleep = random.randint(0, 10)
+        print("{} arrived first".format(request))
+        sleep(time_to_sleep)
 
         # Return result
-        return "{} processed.".format( request)
+        return "{} processed ({} seconds).".format(request, time_to_sleep)
+
 
 
 # 1. Start the service with 2 processors.
@@ -38,12 +43,10 @@ promise2 = processor_service.queue_request("hola2")
 promise3 = processor_service.queue_request("hola3")
 promise4 = processor_service.queue_request("hola4")
 
-promise3.abort()
-print("Aborted promise3")
+promise_set = PromiseSet([promise, promise2, promise3, promise4])
 
-print(promise.get_result())
-print(promise2.get_result())
-print(promise3.get_result())
-print(promise4.get_result())
+# This loop takes the promises by arrival order
+for promise in promise_set.select():
+    print(promise.get_result())
 
 processor_service.stop()

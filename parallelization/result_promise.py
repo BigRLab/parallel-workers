@@ -1,8 +1,47 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import os
+import select
 
 __author__ = "Ivan de Paz Centeno"
+
+
+class WaitableEvent:
+    """
+    Class source: http://code.activestate.com/recipes/498191-waitable-cross-process-threadingevent-class/
+    Provides an abstract object that can be used to resume select loops with
+    indefinite waits from another thread or process. This mimics the standard
+    threading.Event interface.
+    """
+
+    def __init__(self):
+        self._read_fd, self._write_fd = os.pipe()
+
+    def wait(self, timeout=None):
+        rfds, wfds, efds = select.select([self._read_fd], [], [], timeout)
+        return self._read_fd in rfds
+
+    def isSet(self):
+        return self.wait(0)
+
+    def clear(self):
+        if self.isSet():
+            os.read(self._read_fd, 1)
+
+    def set(self):
+        if not self.isSet():
+            os.write(self._write_fd, b'1')
+
+    def fileno(self):
+        """
+        Return the FD number of the read side of the pipe, allows this object to
+        be used with select.select().
+        """
+        return self._read_fd
+
+    def __del__(self):
+        os.close(self._read_fd)
+        os.close(self._write_fd)
 
 
 class ResultPromise(object):
@@ -19,7 +58,8 @@ class ResultPromise(object):
 
         self.result = None
         self.lock = multithread_manager.Lock()
-        self.event = multithread_manager.Event()
+        #self.event = multithread_manager.Event()
+        self.event = WaitableEvent()
         self.request = request
         self.discard_aborts = 0
         self.service_owner = service_owner
@@ -76,3 +116,6 @@ class ResultPromise(object):
     def discard_one_abort(self):
         with self.lock:
             self.discard_aborts += 1
+
+    def _get_event(self):
+        return self.event
