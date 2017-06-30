@@ -51,7 +51,7 @@ class ResultPromise(object):
     Also, it allows to wait for the result to be ready.
     """
 
-    def __init__(self, multithread_manager, request, service_owner):
+    def __init__(self, multithread_manager, request, service_owner, callback=None):
         """
         Initializes the result container.
         """
@@ -63,6 +63,7 @@ class ResultPromise(object):
         self.request = request
         self.discard_aborts = 0
         self.service_owner = service_owner
+        self.listener_func = callback
 
     def set_result(self, result):
         """
@@ -73,6 +74,9 @@ class ResultPromise(object):
             self.result = result
 
         self.event.set()
+
+        if self.listener_func is not None:
+            self.listener_func(self)
 
     def get_result(self):
         """
@@ -119,3 +123,7 @@ class ResultPromise(object):
 
     def _get_event(self):
         return self.event
+
+    def set_listener(self, listener_func):
+        self.listener_func = listener_func
+

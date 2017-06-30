@@ -36,3 +36,11 @@ class PromiseSet(object):
                 self.selectors.unregister(promise._get_event())
                 yield self.promises_list[event[0].data]
 
+    def wait_for_all(self, timeout=None, completed_callback=None):
+        while self.consumed_count < len(self.promises_list):
+            for event in self.selectors.select(timeout):
+                self.consumed_count += 1
+                promise = self.promises_list[event[0].data]
+                self.selectors.unregister(promise._get_event())
+                if completed_callback is not None:
+                    completed_callback(promise)

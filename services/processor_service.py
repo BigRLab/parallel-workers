@@ -18,14 +18,15 @@ class ProcessorService(ServiceInterface, PoolInterface):
         self.total_workers = parallel_workers
         self.promises = {}
 
-    def queue_request(self, request):
+    def queue_request(self, request, callback=None):
         with self.lock:
             if request in self.promises:
+                print("Hola?")
                 promise = self.promises[request]
                 promise.discard_one_abort()
 
             else:
-                promise = ResultPromise(self.manager, request, self)
+                promise = ResultPromise(self.manager, request, self, callback)
                 self.promises[request] = promise
                 PoolInterface.queue_request(self, request)
 
