@@ -33,7 +33,7 @@ class ExampleProcessor(Processor):
 
 
 def completed_callback(promise):
-    # Shared operations requires of a multiprocessing LOCK, as this function is invoked by a parallel process
+    # Shared operations DOES NOT require of a multiprocessing LOCK. This function is executed in the main thread.
     print(promise.get_result())
 
 # 1. Start the service with 2 processors.

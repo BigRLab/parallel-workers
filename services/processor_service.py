@@ -21,7 +21,6 @@ class ProcessorService(ServiceInterface, PoolInterface):
     def queue_request(self, request, callback=None):
         with self.lock:
             if request in self.promises:
-                print("Hola?")
                 promise = self.promises[request]
                 promise.discard_one_abort()
 
