@@ -24,7 +24,6 @@ class ExampleProcessor(Processor):
         time_to_sleep = random.randint(0, 10)
         print("{} arrived first".format(request))
         sleep(time_to_sleep)
-
         # Return result
         return "{} processed ({} seconds).".format(request, time_to_sleep)
 
@@ -38,7 +37,7 @@ print("Queued hola, hola2, hola3 y hola4")
 promise = processor_service.queue_request("hola")
 promise2 = processor_service.queue_request("hola2")
 promise3 = processor_service.queue_request("hola3")
-promise4 = processor_service.queue_request("hola4")
+promise4 = processor_service.queue_request("hola2")
 
 # A promise can be aborted before it is getting processed.
 promise3.abort()

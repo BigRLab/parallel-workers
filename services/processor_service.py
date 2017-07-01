@@ -3,7 +3,7 @@
 from time import sleep
 
 from parallelization.pool_interface import PoolInterface
-from parallelization.result_promise import ResultPromise
+from parallelization.result_promise import ResultPromise, WaitableEvent
 from parallelization.service_interface import ServiceInterface, SERVICE_STOPPED
 
 __author__ = 'Iván de Paz Centeno'
@@ -17,6 +17,8 @@ class ProcessorService(ServiceInterface, PoolInterface):
                                processor_class_init_args=processor_class_init_args)
         self.total_workers = parallel_workers
         self.promises = {}
+        self.promises_lock = self.manager.Lock()
+        self.promises_event = WaitableEvent()
 
     def queue_request(self, request, callback=None):
         with self.lock:
@@ -25,7 +27,8 @@ class ProcessorService(ServiceInterface, PoolInterface):
                 promise.discard_one_abort()
 
             else:
-                promise = ResultPromise(self.manager, request, self, callback)
+                promise = ResultPromise(self.manager, request, self, callback, promise_lock=self.promises_lock,
+                                        promise_event=self.promises_event)
                 self.promises[request] = promise
                 PoolInterface.queue_request(self, request)
 

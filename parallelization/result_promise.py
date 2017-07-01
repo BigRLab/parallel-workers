@@ -51,19 +51,25 @@ class ResultPromise(object):
     Also, it allows to wait for the result to be ready.
     """
 
-    def __init__(self, multithread_manager, request, service_owner, callback=None):
+    def __init__(self, multithread_manager, request, service_owner, callback=None, promise_lock=None, promise_event=None):
         """
         Initializes the result container.
         """
 
         self.result = None
-        self.lock = multithread_manager.Lock()
-        #self.event = multithread_manager.Event()
-        self.event = WaitableEvent()
+        self.result_set = False
+        self.lock = promise_lock
+        self.event = promise_event
         self.request = request
         self.discard_aborts = 0
         self.service_owner = service_owner
         self.listener_func = callback
+
+        if self.lock is None:
+            self.lock = multithread_manager.Lock()
+
+        if self.event is None:
+            self.event = WaitableEvent()
 
     def set_result(self, result):
         """
@@ -72,6 +78,7 @@ class ResultPromise(object):
 
         with self.lock:
             self.result = result
+            self.result_set = True
 
         self.event.set()
 
@@ -83,13 +90,26 @@ class ResultPromise(object):
         Getter for the result. It will wait until the result is ready.
         :return: Resource object.
         """
+        with self.lock:
+            result_set = self.result_set
 
-        self.event.wait()
+        while result_set is False:
+            self.event.wait()
+            self.event.clear()
+
+            with self.lock:
+                result_set = self.result_set
 
         with self.lock:
             result = self.result
 
         return result
+
+    def peak_result(self):
+        with self.lock:
+            result_set = self.result_set
+
+        return result_set
 
     def abort(self):
         """
@@ -127,3 +147,5 @@ class ResultPromise(object):
     def set_listener(self, listener_func):
         self.listener_func = listener_func
 
+    def get_request(self):
+        return self.request
