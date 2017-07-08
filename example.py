@@ -37,7 +37,7 @@ print("Queued hola, hola2, hola3 y hola4")
 promise = processor_service.queue_request("hola")
 promise2 = processor_service.queue_request("hola2")
 promise3 = processor_service.queue_request("hola3")
-promise4 = processor_service.queue_request("hola2")
+promise4 = processor_service.queue_request("hola4")
 
 # A promise can be aborted before it is getting processed.
 promise3.abort()

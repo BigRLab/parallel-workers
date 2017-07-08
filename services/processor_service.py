@@ -21,18 +21,55 @@ class ProcessorService(ServiceInterface, PoolInterface):
         self.promises_event = WaitableEvent()
 
     def queue_request(self, request, callback=None):
+        promise = self.book_request(request, callback=callback)
+        self.perform_booked(promise)
+
+        return promise
+
+    def queue_requests(self, requests, callback=None):
+        promises = [self.queue_request(request) for request in requests]
+        return promises
+
+    def book_request(self, request, callback=None):
+        """
+        Generates the promise without queuing the request.
+        Invoke perform_booked() with the promise to make it real.
+        :param request:
+        :param callback:
+        :return:
+        """
         with self.lock:
             if request in self.promises:
                 promise = self.promises[request]
-                promise.discard_one_abort()
-
             else:
                 promise = ResultPromise(self.manager, request, self, callback, promise_lock=self.promises_lock,
                                         promise_event=self.promises_event)
-                self.promises[request] = promise
-                PoolInterface.queue_request(self, request)
+
+        promise.set_booked()
 
         return promise
+
+    def perform_booked(self, promise):
+        """
+        Performs the queue of the promise. Should have been booked so far!
+        :return:
+        """
+        if not promise.is_booked():
+            return False
+
+        request = promise.get_request()
+
+        with self.lock:
+            if request in self.promises:
+                promise.discard_one_abort()
+            else:
+                self.promises[request] = promise
+
+        promise.unset_booked()
+
+        PoolInterface.queue_request(self, request)
+
+        return True
 
     def get_queue_remaining(self):
 

@@ -51,7 +51,8 @@ class ResultPromise(object):
     Also, it allows to wait for the result to be ready.
     """
 
-    def __init__(self, multithread_manager, request, service_owner, callback=None, promise_lock=None, promise_event=None):
+    def __init__(self, multithread_manager, request, service_owner, callback=None, promise_lock=None,
+                 promise_event=None):
         """
         Initializes the result container.
         """
@@ -64,6 +65,7 @@ class ResultPromise(object):
         self.discard_aborts = 0
         self.service_owner = service_owner
         self.listener_func = callback
+        self.booked = 0
 
         if self.lock is None:
             self.lock = multithread_manager.Lock()
@@ -79,8 +81,7 @@ class ResultPromise(object):
         with self.lock:
             self.result = result
             self.result_set = True
-
-        self.event.set()
+            self.event.set()
 
         if self.listener_func is not None:
             self.listener_func(self)
@@ -95,10 +96,10 @@ class ResultPromise(object):
 
         while result_set is False:
             self.event.wait()
-            self.event.clear()
 
             with self.lock:
                 result_set = self.result_set
+                self.event.clear()
 
         with self.lock:
             result = self.result
@@ -127,8 +128,11 @@ class ResultPromise(object):
         :return:
         """
         with self.lock:
+            if self.result_set:
+                return
             if self.discard_aborts == 0:
                 self.service_owner.abort_request(self.request)
+                print("Aborted {}".format(self.request))
             else:
                 self.discard_aborts -= 1
 
@@ -149,3 +153,22 @@ class ResultPromise(object):
 
     def get_request(self):
         return self.request
+
+    def get_booked_count(self):
+        with self.lock:
+            booked = self.is_booked
+        return booked
+
+    def is_booked(self):
+        with self.lock:
+            _is_booked = self.booked
+
+        return _is_booked > 0
+
+    def set_booked(self):
+        with self.lock:
+            self.booked += 1
+
+    def unset_booked(self):
+        with self.lock:
+            self.booked = max(0, self.booked - 1)

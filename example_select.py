@@ -47,6 +47,6 @@ promise_set = PromiseSet([promise, promise2, promise3, promise4])
 
 # This loop takes the promises by arrival order
 for promise in promise_set.select():
-    print(promise.get_result())
+    print("Result: ", promise.get_result())
 
 processor_service.stop()
