@@ -47,7 +47,9 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def completed_callback(promise):
     # Shared operations requires of a multiprocessing LOCK, as this function is invoked by a parallel process
-    print(promise.get_result())
+    result = promise.get_result()
+    if result is not None:
+        print(result)
 
 
 # 1. Start the service with 2 processors.

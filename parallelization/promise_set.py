@@ -21,6 +21,7 @@ class PromiseSet(object):
         # We get events that are different
 
         for promise in promises_list:
+            if promise is None: continue
             event = promise._get_event()
 
             if event not in self.events:
@@ -37,14 +38,7 @@ class PromiseSet(object):
         Selects the first promise accomplished.
         :return: first promise accomplished
         """
-        #previous_lengths = [0, 0]
         while len(self.promises_selected) < self.promises_count:
-            # DONE: TIMEOUT, EXIT IF LEN OF BOTH ARE THE SAME DURING 2 "WHILE" ITERATIONS.
-            #if previous_lengths == [len(self.promises_selected), len(self.promises_list)]:
-            #    break
-
-            #previous_lengths = [len(self.promises_selected), len(self.promises_list)]
-
             for event_taken in self.selectors.select(timeout):
                 event_index = event_taken[0].data
                 event = self.events[event_index]

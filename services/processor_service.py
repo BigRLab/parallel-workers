@@ -20,38 +20,53 @@ class ProcessorService(ServiceInterface, PoolInterface):
         self.promises_lock = self.manager.Lock()
         self.promises_event = WaitableEvent()
 
-    def queue_request(self, request, callback=None):
-        promise = self.book_request(request, callback=callback)
-        self.perform_booked(promise)
+    def queue_request(self, request, completed_callback=None):
+        promise = self._book_request(request, completed_callback=completed_callback)
+        self._consume_booked(promise)
 
         return promise
 
-    def queue_requests(self, requests, callback=None):
-        promises = [self.queue_request(request) for request in requests]
+    def queue_requests(self, requests, completed_callback=None, consume_immediately=True):
+        """
+        Queues the requests in the pool for getting processed.
+        :param requests: list of requests to be queued.
+        :param completed_callback: completed_callback for calling whenever the request is finished. This is a paralleled invoked method,
+         requiring of a multiprocessing lock to syncrhonize values.
+        :param consume_immediately: Each request from the requests list is queued into the pool for processing. This
+         flag specifies whether the request should be processed as fast as it gets queued, or if its processing should
+         be delayed until all the requests from the list are successfully queued.
+        :return: A processing promise per request, wrapped in a list.
+        """
+        if consume_immediately:
+            promises = [self.queue_request(request, completed_callback=completed_callback) for request in requests]
+        else:
+            promises = [self._book_request(request, completed_callback=completed_callback) for request in requests]
+            for promise in promises: self._consume_booked(promise)
+
         return promises
 
-    def book_request(self, request, callback=None):
+    def _book_request(self, request, completed_callback=None):
         """
         Generates the promise without queuing the request.
-        Invoke perform_booked() with the promise to make it real.
+        Invoke _consume_booked() with the promise to make it real.
         :param request:
-        :param callback:
+        :param completed_callback:
         :return:
         """
         with self.lock:
             if request in self.promises:
                 promise = self.promises[request]
             else:
-                promise = ResultPromise(self.manager, request, self, callback, promise_lock=self.promises_lock,
+                promise = ResultPromise(self.manager, request, self, completed_callback, promise_lock=self.promises_lock,
                                         promise_event=self.promises_event)
 
         promise.set_booked()
 
         return promise
 
-    def perform_booked(self, promise):
+    def _consume_booked(self, promise):
         """
-        Performs the queue of the promise. Should have been booked so far!
+        Performs the queue of the promise inside the parallel pool. Must have been booked before..
         :return:
         """
         if not promise.is_booked():
@@ -78,7 +93,7 @@ class ProcessorService(ServiceInterface, PoolInterface):
 
         return queue_size
 
-    def get_workers_processing(self):
+    def get_workers_processing_count(self):
 
         workers_free = self.get_processes_free()
         return self.total_workers - workers_free

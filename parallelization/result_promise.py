@@ -132,7 +132,6 @@ class ResultPromise(object):
                 return
             if self.discard_aborts == 0:
                 self.service_owner.abort_request(self.request)
-                print("Aborted {}".format(self.request))
             else:
                 self.discard_aborts -= 1
 
